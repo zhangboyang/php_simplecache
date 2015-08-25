@@ -9,32 +9,32 @@
     /* set framework settings */
     $cf = new php_simplecache;
     
-	$cf->pconfig = array('family' => '/^[ :,|a-zA-Z0-9]{0,256}$/',
-	                   'subset' => '/^[,\\-a-zA-Z0-9]{0,256}$/',
-				       'effect' => '/^[|\\-a-zA-Z0-9]{0,256}$/');
+    $cf->pconfig = array('family' => '/^[ :,|a-zA-Z0-9]{0,256}$/',
+                         'subset' => '/^[,\\-a-zA-Z0-9]{0,256}$/',
+                         'effect' => '/^[|\\-a-zA-Z0-9]{0,256}$/');
 
     $cf->dbdbname = 'googlefont';
     $cf->dbtblname = 'css';
 
-	$cf->url_head = 'https://fonts.googleapis.com/css';
-	$cf->cache_life = 30 * 24 * 3600;
-	$cf->ctype = 'text/css';
-	
-	$cf->ua = $not_ie_flag ? 'Firefox/38.0' : 'MSIE';
-	
-	/* set callback functions */
-	$cf->make_key_func = function ($url_tail) {
-	    global $not_ie_flag;
-	    return ($not_ie_flag ? '1' : '0') . $url_tail;
-	};
+    $cf->url_head = 'https://fonts.googleapis.com/css';
+    $cf->cache_life = 30 * 24 * 3600;
+    $cf->ctype = 'text/css';
+    
+    $cf->ua = $not_ie_flag ? 'Firefox/38.0' : 'MSIE';
+    
+    /* set callback functions */
+    $cf->make_key_func = function ($url_tail) {
+        global $not_ie_flag;
+        return ($not_ie_flag ? '1' : '0') . $url_tail;
+    };
 
     $cf->data_filter_func = function ($data) {
-	    $my_fontstatic_url = 'http://yourservername/font.php?path=';
-	    //$data = str_replace('http://fonts.gstatic.com', $my_fontstatic_url, $data);
-	    $data = str_replace('https://fonts.gstatic.com', $my_fontstatic_url, $data);
-	    return $data;
+        $my_fontstatic_url = 'http://yourservername/font.php?path=';
+        //$data = str_replace('http://fonts.gstatic.com', $my_fontstatic_url, $data);
+        $data = str_replace('https://fonts.gstatic.com', $my_fontstatic_url, $data);
+        return $data;
     };
 
     /* execute framework */
-	$cf->execute();
+    $cf->execute();
 ?>
