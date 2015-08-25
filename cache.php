@@ -56,8 +56,8 @@ class php_simplecache {
             $pval = array_key_exists($pkey, $_GET) ? $_GET[$pkey] : '';
             if (!is_string($pval)) $this->fail('parameter \'' . $pkey . '\' is not string');
             if (!preg_match($ppreg, $pval)) {
-                if (!is_null($pdconfig) && array_key_exists($pkey, $pdconfig))
-                    $pval = $pdconfig[$pkey];
+                if (!is_null($this->pdconfig) && array_key_exists($pkey, $this->pdconfig))
+                    $pval = $this->pdconfig[$pkey];
                 else
                     $this->fail('preg_match for \'' . $pkey .'\' failed');
             }
