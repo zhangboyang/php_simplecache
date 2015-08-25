@@ -1,0 +1,13 @@
+# php_simplecache
+一个简单的缓存网站的程序
+可以缓存 google font api 与 gravatar 到本地
+具体的实现请看 cache.php
+
+文件说明:
+    cache.php: 公用的框架
+    css.php: 用来缓存 google font 的 css 部分
+    font.php: 用来缓存 google font 的字体文件部分
+    avatar.php: 用来缓存 gravatar 的图片
+    avatar_file.php: 使用文件系统的缓存 gravatar 的实现，不使用数据库
+    test.html: 用来测试服务器的网页
+    test_orginal.html: 使用原版 font api 的网页
