@@ -113,8 +113,23 @@ class php_simplecache {
     {
         /* max-age has different meaning to cache_life */
         $max_age = $this->cache_life;
+        $etag = sha1($data);
+
+        $etagflag = 0;
+        if (array_key_exists('HTTP_IF_NONE_MATCH', $_SERVER)) {
+            $cetag = $_SERVER['HTTP_IF_NONE_MATCH'];
+            if (strpos($cetag, $etag) !== false) $etagflag = 1;
+        }
+
+        if ($etagflag) {
+            header("HTTP/1.1 304 Not Modified");
+            exit(0);
+        }
+
         if (!is_null($ctype)) header('Content-Type: ' . $ctype);
         header('Cache-Control: public, max-age=' . $max_age);
+        header('ETag: "' . $etag . '"');
+
         echo $data;
         exit(0);
     }
