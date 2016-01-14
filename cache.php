@@ -128,6 +128,7 @@ class php_simplecache {
 
         if (!is_null($ctype)) header('Content-Type: ' . $ctype);
         header('Cache-Control: public, max-age=' . $max_age);
+        header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $max_age) . ' GMT');
         header('ETag: "' . $etag . '"');
 
         echo $data;
