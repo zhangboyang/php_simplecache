@@ -123,11 +123,14 @@ class php_simplecache {
 
         if ($etagflag) {
             header("HTTP/1.1 304 Not Modified");
+            header('Cache-Control: public, max-age=' . $max_age);
+            header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $max_age) . ' GMT');
             exit(0);
         }
 
         if (!is_null($ctype)) header('Content-Type: ' . $ctype);
         header('Access-Control-Allow-Origin: *');
+        header('Timing-Allow-Origin: *');
         header('Cache-Control: public, max-age=' . $max_age);
         header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $max_age) . ' GMT');
         header('ETag: "' . $etag . '"');
