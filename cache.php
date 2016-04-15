@@ -44,7 +44,7 @@ class php_simplecache {
         $data = curl_exec($ch);
         if ($data === false) $this->fail('remote fetch failed');
         $info = curl_getinfo($ch);
-        if (!is_null($ctype) && $info['content_type'] !== $ctype) $this->fail('content-type mismath');
+        if (!is_null($ctype) && strpos($info['content_type'], $ctype) !== 0) $this->fail('content-type mismath');
         curl_close($ch);
         return $data;
     }
