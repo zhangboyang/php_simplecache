@@ -14,10 +14,10 @@ function str_endwith($a, $b)
     
     $cf->pconfig = array('path' => '/^\\/[_\\-\\/a-zA-Z0-9]{0,256}\\.(woff|woff2|eot|ttf)$/');
 
-    $cf->dbdbname = 'googlefont';
+    $cf->dbdbname = 'simplecache';
     $cf->dbtblname = 'font';
 
-    $cf->url_head = 'http://fontstatic.useso.com';
+    $cf->url_head = 'https://fonts.gstatic.com';
     $cf->cache_life = 30 * 24 * 3600;
     
     /* set callback */

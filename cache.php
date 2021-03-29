@@ -5,11 +5,12 @@ class php_simplecache {
     
     /* db settings */
     var $dbaddr = 'localhost';
-    var $dbuser = 'root';
-    var $dbpasswd = 'yourpassword';
+    var $dbuser = 'your_username';
+    var $dbpasswd = 'your_password';
     var $dbdbname;
     var $dbtblname;
-    /* CREATE TABLE tblname (hash CHAR(40) PRIMARY KEY, expires DATETIME, data LONGBLOB, atime DATETIME, count INT UNSIGNED); */
+    /* CREATE TABLE tblname (hash CHAR(40) PRIMARY KEY, expires DATETIME, data LONGBLOB, atime DATETIME, ctime DATETIME, count INT UNSIGNED, hashkey LONGTEXT); */
+    /* SELECT hash, LENGTH(data), expires, atime, ctime, count, hashkey FROM tblname ORDER BY atime; */
     
     /* user settings */
     var $pconfig; /* arg config: key => regex */
@@ -18,6 +19,7 @@ class php_simplecache {
     var $cache_life; /* in seconds */
     var $ctype = NULL;
     var $ua = NULL;
+    var $force_ipv6 = false;
     
     /* callback functions */
     var $url_tail_func = NULL; /* arg: $plist; ret: url_tail */
@@ -28,7 +30,7 @@ class php_simplecache {
 
     private function fail($msg)
     {
-        http_response_code(501);
+        http_response_code(503);
         die($msg);
     }
 
@@ -41,6 +43,10 @@ class php_simplecache {
         curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
         curl_setopt($ch, CURLOPT_ENCODING, '');
         curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+        curl_setopt($ch, CURLOPT_TCP_FASTOPEN, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        if ($this->force_ipv6 === true) curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V6);
         $data = curl_exec($ch);
         if ($data === false) $this->fail('remote fetch failed');
         $info = curl_getinfo($ch);
@@ -81,9 +87,9 @@ class php_simplecache {
     }
 
 
-    private function check_cache($hash)
+    private function check_cache($key, $hash)
     {
-        $stmt = $this->mysqli->prepare('SELECT data FROM ' . $this->dbtblname . ' WHERE hash = ? AND expires > NOW()');
+        $stmt = $this->mysqli->prepare('SELECT data FROM ' . $this->dbtblname . ' WHERE hash = ? AND hashkey IS NOT NULL AND expires > NOW()');
         $stmt->bind_param('s', $hash);
         if (!$stmt->execute()) $this->fail('SELECT failed');
         $stmt->store_result();
@@ -99,11 +105,11 @@ class php_simplecache {
         } else return false;
     }
 
-    private function save_cache($hash, $data)
+    private function save_cache($key, $hash, $data)
     {
-        $stmt = $this->mysqli->prepare('INSERT INTO ' . $this->dbtblname . ' (hash, expires, data, atime, count) VALUES (?, NOW() + INTERVAL ' . $this->cache_life . ' SECOND, ?, NOW(), 1) ON DUPLICATE KEY UPDATE expires = VALUES(expires), data = VALUES(data), atime = NOW(), count = count + 1');
+        $stmt = $this->mysqli->prepare('INSERT INTO ' . $this->dbtblname . ' (hash, expires, data, atime, ctime, count, hashkey) VALUES (?, NOW() + INTERVAL ' . $this->cache_life . ' SECOND, ?, NOW(), NOW(), 1, ?) ON DUPLICATE KEY UPDATE expires = VALUES(expires), data = VALUES(data), atime = NOW(), count = count + 1, hashkey = ?');
         $null = NULL;
-        $stmt->bind_param('sb', $hash, $null);
+        $stmt->bind_param('sbss', $hash, $null, $key, $key);
         $stmt->send_long_data(1, $data);
         if (!$stmt->execute()) $this->fail('INSERT failed');
         $stmt->close();
@@ -147,11 +153,11 @@ class php_simplecache {
         $key = is_null($this->make_key_func) ? $url_tail : $this->make_key_func->__invoke($url_tail);
         $hash = sha1($key);
         $this->mysqli = new mysqli($this->dbaddr, $this->dbuser, $this->dbpasswd, $this->dbdbname);
-        $data = $this->check_cache($hash);
+        $data = $this->check_cache($key, $hash);
         if ($data === false) {
             $data = $this->fetch_url($this->url_head . $url_tail, $this->ctype, $this->ua);
             if (!is_null($this->data_filter_func)) $data = $this->data_filter_func->__invoke($data);
-            $this->save_cache($hash, $data);
+            $this->save_cache($key, $hash, $data);
         }
         if (!is_null($this->ctype_bydata_func)) $this->ctype = $this->ctype_bydata_func->__invoke($data);
         $this->mysqli->close();

@@ -11,7 +11,7 @@
     
     $cf->pdconfig = array('d' => 'identicon');
 
-    $cf->dbdbname = 'avatar';
+    $cf->dbdbname = 'simplecache';
     $cf->dbtblname = 'avatar';
 
     $cf->url_head = 'https://secure.gravatar.com/avatar/';

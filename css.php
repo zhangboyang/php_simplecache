@@ -13,7 +13,7 @@
                          'subset' => '/^[,\\-a-zA-Z0-9]{0,256}$/',
                          'effect' => '/^[|\\-a-zA-Z0-9]{0,256}$/');
 
-    $cf->dbdbname = 'googlefont';
+    $cf->dbdbname = 'simplecache';
     $cf->dbtblname = 'css';
 
     $cf->url_head = 'https://fonts.googleapis.com/css';
@@ -29,7 +29,7 @@
     };
 
     $cf->data_filter_func = function ($data) {
-        $my_fontstatic_url = 'http://yourservername/font.php?path=';
+        $my_fontstatic_url = '/your/url/to/font.php?path=';
         //$data = str_replace('http://fonts.gstatic.com', $my_fontstatic_url, $data);
         $data = str_replace('https://fonts.gstatic.com', $my_fontstatic_url, $data);
         return $data;
